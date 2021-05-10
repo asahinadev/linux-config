@@ -59,8 +59,6 @@ curl \
 sed -i "s/__DOMAIN__/$DOMAIN/g" 00.default.server.conf
 sed -i "s/__DOMAIN__/$DOMAIN/g" 01.www.server.conf
 
-
-
 certbot certonly \
     --nginx                     \
     --agree-tos                 \
@@ -93,7 +91,7 @@ cd conf.d
 cp -a 10-master.conf 10-master.conf.org
 cp -a 10-ssl.conf    10-ssl.conf.org
 cp -a 10-auth.conf   10-auth.conf.org
-cp -a 10-mail.conf 10-mail.conf.org
+cp -a 10-mail.conf   10-mail.conf.org
 curl \
  -O https://raw.githubusercontent.com/asahinadev/linux-config/main/etc/dovecot/conf.d/10-auth.conf \
  -O https://raw.githubusercontent.com/asahinadev/linux-config/main/etc/dovecot/conf.d/10-mail.conf \
@@ -101,3 +99,9 @@ curl \
  -O https://raw.githubusercontent.com/asahinadev/linux-config/main/etc/dovecot/conf.d/10-ssl.conf
 sed -i "s/__DOMAIN__/mirror-world.work/g" 10-ssl.conf
 cat 10-ssl.conf | grep $DOMAIN
+
+
+
+systemctl enable postfix dovecot saslauthd
+systemctl start  postfix dovecot saslauthd
+
