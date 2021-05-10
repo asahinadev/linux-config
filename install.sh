@@ -19,25 +19,60 @@ if [ "$2" = "" ]; then
   exit 1
 fi
 
+#########################
+# 最新化（kernelは除外）#
+#########################
+yum -y update  -x kernel*
+
+#######################################
+# Extra Packages for Enterprise Linux #
+#######################################
 yum -y install epel-release
+
+#####################################
+# yum config manager インストール   #
+#####################################
+yum -y install yum-utils
+
+########################
+# php-fpm インストール #
+########################
+yum -y install http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+yum-config-manager --enable remi-php74
 yum -y install \
-  nginx certbot \
+  php-fpm      \
+  php-mbstring \
+  php-intl     \
+  php-xml      \
+  php-mysql    \
+  php-pdo      
+
+########################
+# nginx インストール   #
+########################
+yum -y remove  httpd
+yum -y install nginx
+
+########################
+# docker インストール  #
+########################
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum -y install          \
+  docker-ce             \
+  docker-ce-cli         \
+  docker-compose.noarch  
+
+########################
+# postfix インストール #
+########################
+yum -y install \
+  certbot \
   python2-certbot-nginx \
   postfix \
   dovecot \
   cyrus-sasl \
   cyrus-sasl-md5 \
   cyrus-sasl-plain
-
-
-#################
-# firewall 設定 #
-#################
-firewall-cmd --permanent \
-    --add-service=http   \
-    --add-service=https  \
-    --add-service=imaps  \
-    --add-service=smtps  
 
 #################
 # nginx 設定    #
@@ -103,5 +138,19 @@ sed -i "s/__DOMAIN__/$DOMAIN/g" 10-ssl.conf
 cat 10-ssl.conf | grep $DOMAIN
 
 systemctl enable postfix dovecot
-systemctl start  postfix dovecot
 
+#################
+# firewall 設定 #
+#################
+firewall-cmd --permanent \
+    --add-service=http   \
+    --add-service=https  \
+    --add-service=imaps  \
+    --add-service=smtps  
+
+
+#################
+# サービス起動  #
+#################
+systemctl restart nginx
+systemctl start  postfix dovecot
